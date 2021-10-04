@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "apsw2c", "apsw2c\apsw2c.csproj", "{67C97E1D-6BCE-4AFD-A179-51530A8CB028}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "w2cdotnet", "w2cdotnet\w2cdotnet.csproj", "{67C97E1D-6BCE-4AFD-A179-51530A8CB028}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

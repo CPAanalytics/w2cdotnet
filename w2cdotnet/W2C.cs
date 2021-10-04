@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace apsw2c
+namespace w2cdotnet
 {
     public class W2C
     {

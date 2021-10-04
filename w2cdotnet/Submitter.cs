@@ -1,7 +1,7 @@
 ﻿#nullable enable
 using System;
 
-namespace apsw2c
+namespace w2cdotnet
 {
     public class Submitter : W2C
 
@@ -34,12 +34,12 @@ namespace apsw2c
 
         public SubmittersEIN(int fieldValue)
         {
-            int
-            if (fieldValue.Length != RecordLength)
+            string strField = fieldValue.ToString();
+            if (strField.Length != RecordLength)
             {
                 throw new Exceptions.InvalidRecordLenEqException(RecordLength);
             }
-            _fieldValue = fieldValue;
+            _fieldValue = strField;
         }
         
     }
