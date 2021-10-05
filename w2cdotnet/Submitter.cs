@@ -1,46 +1,26 @@
 ﻿#nullable enable
 using System;
 
-namespace w2cdotnet
+namespace apsw2c
 {
     public class Submitter : W2C
 
     //RCA Submitter Record
     {
     //5.5 Submitter Record
-    private struct RecordIdentifier
+
+
+
+    private EinField _submittersEin;
+   
+
+    public Submitter(int ein)
     {
-        private const int RecordStart = 1;
-        private const int RecordLength = 3;
-
-        private string _fieldValue;
-
-        public RecordIdentifier(string fieldValue)
-        {
-            if (fieldValue.Length != RecordLength)
-            {
-                throw new Exceptions.InvalidRecordLenEqException(RecordLength);
-            }
-            _fieldValue = fieldValue;
-        }
-        
+        _submittersEin = new EinField(recordStart: 4, recordLength: 9, requiredField: true, ein);
     }
-    private struct SubmittersEIN
+
+    protected override void WriteLine()
     {
-        private const int RecordStart = 4;
-        private const int RecordLength = 9;
-
-        private string _fieldValue;
-
-        public SubmittersEIN(int fieldValue)
-        {
-            string strField = fieldValue.ToString();
-            if (strField.Length != RecordLength)
-            {
-                throw new Exceptions.InvalidRecordLenEqException(RecordLength);
-            }
-            _fieldValue = strField;
-        }
         
     }
     }
