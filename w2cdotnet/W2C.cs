@@ -1,5 +1,7 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 
 namespace w2cdotnet
@@ -9,15 +11,75 @@ namespace w2cdotnet
         public const int RecordLength = 1024;
         public const int MaxEmployeeRecords = 25000;
         public const int MaxEmployerRecords = 500000;
-        protected class Field<T>
-        {
-            protected int RecordStart;
-            protected int RecordLength;
-            protected bool RequiredField;
-            protected  T FieldValue { get; set; }
 
-            public Field(int recordStart, int recordLength, bool requiredField, T fieldValue)
+        protected interface IField<out T>
+        {
+            string Name { get; }
+            int RecordStart { get; }
+            int RecordLength { get;}
+            bool RequiredField { get;}
+            string FieldFormatted { get; }
+            T? FieldValue { get; }
+            
+            
+            
+        }
+        protected class Field<T>:IField<T>
+        {
+            public string Name { get; protected init; }
+            public int RecordStart { get; protected init; }
+            public int RecordLength { get; protected init; }
+            public bool RequiredField { get; protected init; }
+            public T? _fieldValue;
+            private string _fieldFormat = String.Empty;
+
+            public virtual string FieldFormatted
             {
+                get
+                {
+                    if (_fieldFormat == String.Empty && RequiredField)
+                    {
+                        throw new Exceptions.RequiredFieldException(Name);
+                    }
+                    else
+                    {
+                        return _fieldFormat;
+                    }
+                }
+                private set => _fieldFormat = value;
+            }
+
+            public T? FieldValue
+            {
+                get
+                {
+                    if (RequiredField && _fieldValue is default(T?))
+                    {
+                        throw new Exceptions.RequiredFieldException(Name);
+                    }
+                }
+                set
+                { 
+                    string strValue = value.ToString();
+                    if (strValue.Length <= RecordLength)
+                    {
+                        _fieldValue = value;
+                    }
+                    else
+                    {
+                        throw new Exceptions.InvalidRecordLenException(RecordLength);
+                    }
+
+                    FieldFormatted = strValue;
+                }
+            }
+
+            
+           
+            
+            public Field(string name, int recordStart, int recordLength, bool requiredField, T fieldValue)
+            {
+                Name = name;
                 RecordStart = recordStart;
                 RecordLength = recordLength;
                 RequiredField = requiredField;
@@ -29,7 +91,7 @@ namespace w2cdotnet
         protected class EinField:Field<int>
         {
             
-            protected static bool EinValidator(int? ein)
+            private static bool EinValidator(int? ein)
             {
                 List<string> invalidPrefix = new List<string>() 
                     {"07", "08", "09", "17", "18", "19", "28", "29", "49", "69", "70", "78", "79","89"};
@@ -47,11 +109,21 @@ namespace w2cdotnet
                     return true;
                 }
             }
+            
 
-            private int? _fieldValue;
-            protected new int? FieldValue
+            private new int FieldValue
             {
-                get => _fieldValue;
+                get
+                {
+                    if (RequiredField && _fieldValue)
+                    {
+                        return _fieldValue;
+                    }
+                    else
+                    {
+                        throw new W2Exceptions.RequiredFieldException();
+                    }
+                }
                 set
                 {
                     if (EinValidator(value))
@@ -60,14 +132,15 @@ namespace w2cdotnet
                     }
                     else
                     {
-                        throw new Exceptions.InvalidEin(value);
+                        throw new W2Exceptions.InvalidEin(value);
                     }
                 }
             }
 
-            public EinField(int recordStart, int recordLength, bool requiredField, int fieldValue) : 
-                base(recordStart, recordLength, requiredField, fieldValue)
+            public EinField(string name, int recordStart, int recordLength, bool requiredField, int fieldValue) : 
+                base(name,recordStart, recordLength, requiredField, fieldValue)
             {
+                Name = name;
                 RecordStart = recordStart;
                 RecordLength = recordLength;
                 RequiredField = requiredField;
