@@ -22,18 +22,22 @@ namespace w2cdotnet
     {
         //TODO Complete Submitter class constructor
         FieldList.Add(_recordIdentifier);
-        FieldList.Add(new EinField(name: "submitterEin",recordStart:4,recordLength:9,requiredField:true,submitterEin));
+        FieldList.Add(new EinField(name: "submitterEin",recordStart:4,recordLength:9,submitterEin));
         
         
     }
     //TODO complete WriteLine Method
-    protected override void WriteLine()
+    public override void WriteLine()
     {
-        int LineLength = 0;
+        int LineLength = 1;
         foreach (IField field in FieldList)
         {
+            if (LineLength != field.RecordStart)
+            {
+                throw new Exceptions.PositionCheckError(field.Name);
+            }
+            Console.Write(field.FieldFormatted);
             LineLength += field.RecordLength;
-            Console.WriteLine(field.FieldFormatted, field.RecordLength);
         }
     }
     }

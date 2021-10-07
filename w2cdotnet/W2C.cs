@@ -12,32 +12,33 @@ namespace w2cdotnet
         public const int MaxEmployeeRecords = 25000;
         public const int MaxEmployerRecords = 500000;
 
-        protected interface IField<out T>
+        protected interface IField
         {
             string Name { get; }
             int RecordStart { get; }
             int RecordLength { get;}
             bool RequiredField { get;}
             string FieldFormatted { get; }
-            T? FieldValue { get; }
             
-            
-            
+
+
+
+
         }
-        protected class Field<T>:IField<T>
+        protected class Field<T>:IField
         {
             public string Name { get; protected init; }
             public int RecordStart { get; protected init; }
             public int RecordLength { get; protected init; }
             public bool RequiredField { get; protected init; }
-            public T? _fieldValue;
+            protected T? _fieldValue = default;
             private string _fieldFormat = String.Empty;
 
             public virtual string FieldFormatted
             {
                 get
                 {
-                    if (_fieldFormat == String.Empty && RequiredField)
+                    if (_fieldFormat == string.Empty && RequiredField)
                     {
                         throw new Exceptions.RequiredFieldException(Name);
                     }
@@ -46,16 +47,20 @@ namespace w2cdotnet
                         return _fieldFormat;
                     }
                 }
-                private set => _fieldFormat = value;
+                protected set => _fieldFormat = value;
             }
 
             public T? FieldValue
             {
                 get
                 {
-                    if (RequiredField && _fieldValue is default(T?))
+                    if (RequiredField && object.Equals(_fieldValue, default))
                     {
                         throw new Exceptions.RequiredFieldException(Name);
+                    }
+                    else
+                    {
+                        return _fieldValue;
                     }
                 }
                 set
@@ -86,28 +91,24 @@ namespace w2cdotnet
                 FieldValue = fieldValue;
             }
 
+            protected Field(string name, int recordStart, int recordLength, int requiredField)
+            {
+              
+            }
         }
 
         protected class EinField:Field<int>
         {
-            
             private static bool EinValidator(int? ein)
             {
                 List<string> invalidPrefix = new List<string>() 
                     {"07", "08", "09", "17", "18", "19", "28", "29", "49", "69", "70", "78", "79","89"};
-                string str_ein = ein.ToString();
-                if (str_ein.Length != 9)
+                var strEin = ein.ToString();
+                if (strEin is not {Length: 9})
                 {
                     return false;
                 }
-                if (invalidPrefix.Contains(str_ein.Substring(0, 2)))
-                {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
+                return !invalidPrefix.Contains(strEin[..2]);
             }
             
 
@@ -115,13 +116,14 @@ namespace w2cdotnet
             {
                 get
                 {
-                    if (RequiredField && _fieldValue)
+                    if (RequiredField && object.Equals(_fieldValue,default))
                     {
-                        return _fieldValue;
+                        
+                        throw new Exceptions.RequiredFieldException(Name);
                     }
                     else
                     {
-                        throw new W2Exceptions.RequiredFieldException();
+                        return _fieldValue;
                     }
                 }
                 set
@@ -129,25 +131,27 @@ namespace w2cdotnet
                     if (EinValidator(value))
                     {
                         _fieldValue = value;
+                        FieldFormatted = value.ToString();
                     }
                     else
                     {
-                        throw new W2Exceptions.InvalidEin(value);
+                        throw new Exceptions.InvalidEin(value);
                     }
                 }
             }
 
-            public EinField(string name, int recordStart, int recordLength, bool requiredField, int fieldValue) : 
-                base(name,recordStart, recordLength, requiredField, fieldValue)
+            public EinField(string name, int recordStart, int recordLength, int fieldValue) : 
+                base(name,recordStart, recordLength, fieldValue)
             {
                 Name = name;
                 RecordStart = recordStart;
                 RecordLength = recordLength;
-                RequiredField = requiredField;
                 FieldValue = fieldValue;
+                RequiredField = true;
             }
         }
-        protected abstract void WriteLine();
+
+        public abstract void WriteLine();
         
     }
 

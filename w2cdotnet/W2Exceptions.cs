@@ -7,8 +7,6 @@ namespace w2cdotnet
        //Base field exceptions
         public class InvalidRecordLenEqException : Exception
             {
-                public InvalidRecordLenEqException(){}
-        
                 public InvalidRecordLenEqException(int recordLen)
                     : base($"Expected Length of Field = {recordLen} Field Size")
                 {
@@ -18,7 +16,6 @@ namespace w2cdotnet
 
         public class InvalidRecordLenException : Exception
         {
-            public InvalidRecordLenException(){}
             public InvalidRecordLenException(int recordLen)
                 : base($"Expected Length of Field >= {recordLen}")
             {
@@ -33,12 +30,17 @@ namespace w2cdotnet
         //Specialized Field Exceptions
         public class InvalidEin : Exception
         {
-            public InvalidEin(){}
+
             public InvalidEin(int? ein)
-                : base($"Invalid EIN {ein} check length and prefix.")
+                : base($"Invalid EIN {ein} check length and prefix")
             {
                     
             }
+        }
+
+        public class PositionCheckError : Exception
+        {
+            public PositionCheckError(string fieldname):base($"Position Check Failed on {fieldname}"){}
         }
     }
 }
