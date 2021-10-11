@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Text.Json;
 using System.Threading;
+using System.Xml;
 
 namespace w2cdotnet
 {
@@ -19,10 +21,6 @@ namespace w2cdotnet
             int RecordLength { get;}
             bool RequiredField { get;}
             string FieldFormatted { get; }
-            
-
-
-
 
         }
         protected class Field<T>:IField
@@ -31,7 +29,7 @@ namespace w2cdotnet
             public int RecordStart { get; protected init; }
             public int RecordLength { get; protected init; }
             public bool RequiredField { get; protected init; }
-            protected T? _fieldValue = default;
+            protected T? _fieldValue;
             private string _fieldFormat = String.Empty;
 
             public virtual string FieldFormatted
@@ -65,7 +63,7 @@ namespace w2cdotnet
                 }
                 set
                 { 
-                    string strValue = value.ToString();
+                    var strValue = value?.ToString();
                     if (strValue.Length <= RecordLength)
                     {
                         _fieldValue = value;
@@ -79,9 +77,6 @@ namespace w2cdotnet
                 }
             }
 
-            
-           
-            
             public Field(string name, int recordStart, int recordLength, bool requiredField, T fieldValue)
             {
                 Name = name;
@@ -116,7 +111,7 @@ namespace w2cdotnet
             {
                 get
                 {
-                    if (RequiredField && object.Equals(_fieldValue,default))
+                    if (RequiredField && Equals(_fieldValue,default))
                     {
                         
                         throw new Exceptions.RequiredFieldException(Name);
@@ -151,10 +146,24 @@ namespace w2cdotnet
             }
         }
 
+        public W2C(Submitter submitter, int taxyear, XmlDocument xmldocument)
+        {
+            
+        }
+
+        public W2C(Submitter submitter, int taxyear, JsonDocument jsondoc)
+        {
+            
+        }
+
+        public W2C()
+        {
+            
+        }
+        
         public abstract void WriteLine();
         
+        
     }
-
-    
     
 }
