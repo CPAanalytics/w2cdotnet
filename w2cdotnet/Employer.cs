@@ -6,12 +6,19 @@ namespace w2cdotnet
     {
         
         public List<Employee> Employees { get; private set; }
-        private EinField _employerEinField;
+        private string _recordId = "RE";
+        private int _taxYear;
+        private int _agentIndicatorCode;
+        private int _agentEIN;
+
+        private EinField _employerEinField =
+            new EinField("employerEin", recordStart: 4, recordLength: 9, requiredField: true);
+        
 
         public Employer(int employerein)
         {
-            _employerEinField = new EinField(name: "submitterEin",recordStart:4,recordLength:9,employerein);
-            
+            _employerEinField.FieldValue = employerein;
+
         }
 
         public override void WriteLine()

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Runtime.InteropServices;
 
 
 namespace w2cdotnet
@@ -12,33 +13,35 @@ namespace w2cdotnet
     {
     //5.5 Submitter Record
 
-    private List<IField> FieldList = new List<IField>(); 
-    private static Field<string> _recordIdentifier =
-        new Field<string>(name:"RecordIdentifier",recordStart: 1, recordLength: 3, requiredField: true, "RCA");
-    private EinField _submittersEin;
+    
+    private static StringField _recordIdentifier =
+        new StringField(name:"_recordIdentifier",recordStart: 1, recordLength: 3, requiredField: true, "RCA");
+    private EinField _submittersEin = new EinField("submitterEin", 4, 9, true);
+    private StringField _userID;
+    private StringField _softwareVendor;
+    private StringField _blankOne;
    
-
-    public Submitter(int submitterEin)
+    //TODO Complete Submitter class constructor
+    public Submitter(
+        int submitterEin, 
+        string userId = default, 
+        string softwareVendor = default)
     {
-        //TODO Complete Submitter class constructor
-        FieldList.Add(_recordIdentifier);
-        FieldList.Add(new EinField(name: "submitterEin",recordStart:4,recordLength:9,submitterEin));
-        
-        
+        _submittersEin.FieldValue = submitterEin;
+        _userID = new StringField("userID", recordStart: 13, recordLength: 8, requiredField:false, fieldValue: userId);
+        _softwareVendor = new StringField("softwareVendor", recordStart: 21, recordLength: 4, requiredField: false,
+            fieldValue: softwareVendor);
+
+
     }
     //TODO complete WriteLine Method
     public override void WriteLine()
     {
-        int LineLength = 1;
-        foreach (IField field in FieldList)
-        {
-            if (LineLength != field.RecordStart)
-            {
-                throw new Exceptions.PositionCheckError(field.Name);
-            }
-            Console.Write(field.FieldFormatted);
-            LineLength += field.RecordLength;
-        }
+        Console.WriteLine(_recordIdentifier.FieldFormatted +
+                          _submittersEin.FieldFormatted+
+                          _userID.FieldFormatted+
+                          _softwareVendor.FieldFormatted);
+        
     }
     }
 }

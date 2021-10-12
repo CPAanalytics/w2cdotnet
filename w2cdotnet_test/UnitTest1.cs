@@ -12,7 +12,7 @@ namespace w2cdotnet_test
         [TestMethod]
         public void Valid()
         {
-            var testvalidein = new Submitter(123456789);
+            var testvalidein = new Submitter(123456789, "abdc", softwareVendor: "ABCD");
             testvalidein.WriteLine();
             
         }
