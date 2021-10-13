@@ -17,7 +17,7 @@ namespace w2cdotnet
 
         public Employer(int employerein)
         {
-            _employerEinField.FieldValue = employerein;
+            _employerEinField.SetFieldValue(employerein);
 
         }
 
