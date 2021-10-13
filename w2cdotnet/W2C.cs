@@ -105,14 +105,16 @@ namespace w2cdotnet
 
         protected class StringFields:Fields
         {
-            private string? _fieldValue;
+
             public StringFields(string name, int recordStart, int recordLength, bool requiredField) : base(name, recordStart, recordLength, requiredField)
             {
   
             }
-            
+
+            private string? _fieldValue;
             public override void SetFieldValue(string? fieldValue)
             {
+                
                 if (fieldValue == default && RequiredField)
                 {
                     throw new Exceptions.RequiredFieldException(FieldName);
@@ -121,8 +123,7 @@ namespace w2cdotnet
                 {
                     throw new Exceptions.InvalidRecordLenException(FieldLength, FieldName);
                 }
-              
-                
+
                 _fieldValue = fieldValue;
                 FieldFormatted = fieldValue;
                
@@ -133,11 +134,11 @@ namespace w2cdotnet
             {
                 get
                 {
-                    if (GetFieldValue() == default && RequiredField)
+                    if (_fieldValue == default && RequiredField)
                     {
                         throw new Exceptions.RequiredFieldException(FieldName);
                     }
-                    else if(GetFieldValue() == default && !RequiredField)
+                    else if(_fieldValue == default && !RequiredField)
                     {
                         return new string(' ', FieldLength);
                     }
@@ -149,7 +150,7 @@ namespace w2cdotnet
                 //TODO implement FieldFormatted setter
                 protected set
                 {
-                    _fieldFormat = string.Format("{0,-"+FieldLength.ToString()+"}",GetFieldValue());
+                    _fieldFormat = string.Format("{0,-"+FieldLength.ToString()+"}",value);
                 }
             }
             
