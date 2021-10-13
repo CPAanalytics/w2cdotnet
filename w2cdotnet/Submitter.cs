@@ -1,7 +1,9 @@
 ﻿#nullable enable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 
@@ -14,37 +16,39 @@ namespace w2cdotnet
         //5.5 Submitter Record
         
 
-        private Dictionary<string, IField> SubmitterFields = new Dictionary<string, IField>
+        private Dictionary<string, Fields> SubmitterFields = new Dictionary<string, Fields>
         {
-            {"recordIdentifier",new StringField(name: "_recordIdentifier", recordStart: 1, recordLength: 3, requiredField: true)},
-            {"submitterEin",new EinField("submitterEin", 4, 9, true)},
-            {"userId",new StringField("userId",13,8,false)},
-            {"softwareVendor",new StringField("softwareVendor",21,4,false)}
+            {"recordIdentifier",new StringFields(name: "_recordIdentifier", recordStart: 1, recordLength: 3, requiredField: true)},
+            {"submitterEin",new EinFields("submitterEin", 4, 9, true)},
+            {"userId",new StringFields("userId",13,8,false)},
+            {"softwareVendor",new StringFields("softwareVendor",21,4,false)}
         };
+        
+        
+      
+     
 
-        private IField testvalue = new StringField(name: "_recordIdentifier", recordStart: 1, recordLength: 3,
-            requiredField: true);
-    //TODO Complete Submitter class constructor
-    public Submitter(
+        public Submitter(
         int submitterEin, 
         string? userId = default, 
         string? softwareVendor = default)
     {
         SubmitterFields["recordIdentifier"].SetFieldValue("RCA");
+        SubmitterFields["submitterEin"].SetFieldValue(submitterEin);
         SubmitterFields["userId"].SetFieldValue(userId);
         SubmitterFields["softwareVendor"].SetFieldValue(softwareVendor);
-        testvalue.SetFieldValue("RCA");
-        
-        
+
 
     }
     //TODO complete WriteLine Method
     public override void WriteLine()
     {
-        foreach (KeyValuePair<string, IField> keyValuePair in SubmitterFields)
+        foreach (KeyValuePair<string, Fields> keyValuePair in SubmitterFields)
         {
             Console.Write(keyValuePair.Value.FieldFormatted);
+            
         }
+        Console.WriteLine();
         
     }
     }

@@ -14,38 +14,21 @@ namespace w2cdotnet
         public const int LineLength = 1024;
         public const int MaxEmployeeRecords = 25000;
         public const int MaxEmployerRecords = 500000;
+        
 
-        protected interface IField
-        {
-            string FieldName { get; }
-            int FieldStart { get; }
-            int FieldLength { get;}
-            bool RequiredField { get;}
-            string FieldFormatted { get; }
-
-            void SetFieldValue<T>(T fieldValue);
-            T GetFieldValue<T>();
-            
-        }
-
-        protected abstract class Field<T>:IField
+        protected abstract class Fields
         {
             public string FieldName { get; protected init; }
             public int FieldStart { get; protected init; }
             public int FieldLength { get; protected init; }
             public bool RequiredField { get; protected init; }
-            protected T? _fieldValue;
-            protected string _fieldFormat = String.Empty;
-            public abstract void SetFieldValue<T>(T fieldValue);
-            public abstract T GetFieldValue<T>();
+            protected string? _fieldFormat = default;
 
-            
-
-            public virtual string FieldFormatted
+            public virtual string? FieldFormatted
             {
                 get
                 {
-                    if (_fieldFormat == string.Empty && RequiredField)
+                    if (_fieldFormat == default && RequiredField)
                     {
                         throw new Exceptions.RequiredFieldException(FieldName);
                     }
@@ -57,26 +40,42 @@ namespace w2cdotnet
                 protected set => _fieldFormat = value;
             }
 
-           protected Field(string name, int recordStart, int recordLength, bool requiredField)
+           public Fields(string name, int recordStart, int recordLength, bool requiredField)
             {
                 FieldName = name;
                 FieldStart = recordStart;
                 FieldLength = recordLength;
                 RequiredField = requiredField;
             }
-           
+
+
+           public virtual void SetFieldValue(string? stringField)
+           {
+           }
+
+           public virtual void SetFieldValue(int ein)
+           {
+           }
+
+           public virtual void SetFieldValue(decimal moneyField)
+           {
+           }
+
+           public virtual decimal GetFieldValue()
+           {
+               return 0;
+           }
         }
 
-        protected class EinField:Field<int?>
+        protected class EinFields:Fields
         {
-            private Field<int?> _fieldImplementation;
-
-            public EinField(string name, int recordStart, int recordLength, bool requiredField) : 
+            private int _fieldValue;
+            public EinFields(string name, int recordStart, int recordLength, bool requiredField) : 
                 base(name, recordStart, recordLength, requiredField)
             {
             }
 
-            private static bool EinValidator(int? ein)
+            private static bool EinValidator(int ein)
             {
                 List<string> invalidPrefix = new List<string>() 
                     {"07", "08", "09", "17", "18", "19", "28", "29", "49", "69", "70", "78", "79","89"};
@@ -88,7 +87,7 @@ namespace w2cdotnet
                 return !invalidPrefix.Contains(strEin[..2]);
             }
             
-            public override void SetFieldValue<T>(T fieldValue)
+            public override void SetFieldValue(int fieldValue)
             {
                 if (EinValidator(fieldValue))
                 {
@@ -100,54 +99,37 @@ namespace w2cdotnet
                     throw new Exceptions.InvalidEin(fieldValue);
                 }
             }
-
-            public int? GetFieldValue()
-            {
-                if (RequiredField && object.Equals(_fieldValue, default))
-                {
-                    throw new Exceptions.RequiredFieldException(FieldName);
-                }
-                else
-                {
-                    return _fieldValue;
-                }
-            }
+            
             
         }
 
-        protected class StringField:Field<string?>
+        protected class StringFields:Fields
         {
-            public StringField(string name, int recordStart, int recordLength, bool requiredField) : base(name, recordStart, recordLength, requiredField)
+            private string? _fieldValue;
+            public StringFields(string name, int recordStart, int recordLength, bool requiredField) : base(name, recordStart, recordLength, requiredField)
             {
   
             }
             
-            public void SetFieldValue(string? fieldValue)
+            public override void SetFieldValue(string? fieldValue)
             {
-                if (fieldValue.Length<=FieldLength)
-                {
-                    _fieldValue = fieldValue;
-                    FieldFormatted = fieldValue;
-                }
-                else
-                {
-                    throw new Exceptions.InvalidRecordLenException(FieldLength, FieldName);
-                }
-            }
-
-            public string? GetFieldValue()
-            {
-                if (RequiredField && Equals(_fieldValue, default))
+                if (fieldValue == default && RequiredField)
                 {
                     throw new Exceptions.RequiredFieldException(FieldName);
                 }
-                else
+                else if (fieldValue != null && fieldValue.Length > FieldLength)
                 {
-                    return _fieldValue;
+                    throw new Exceptions.InvalidRecordLenException(FieldLength, FieldName);
                 }
+              
+                
+                _fieldValue = fieldValue;
+                FieldFormatted = fieldValue;
+               
             }
 
-            public override string FieldFormatted
+        
+            public override string? FieldFormatted
             {
                 get
                 {
@@ -173,14 +155,24 @@ namespace w2cdotnet
             
         }
 
-        protected class MoneyField:Field<decimal>
+        protected class MoneyFields:Fields
         {
-            public MoneyField(string name, int recordStart, int recordLength, bool requiredField) : 
+            private decimal _fieldValue;
+            public MoneyFields(string name, int recordStart, int recordLength, bool requiredField) : 
                 base(name, recordStart, recordLength, requiredField)
             {
             }
-            
-            
+
+            //TODO implement MoneyField getter and setter
+            public override void SetFieldValue(decimal fieldValue)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override decimal GetFieldValue()
+            {
+                return _fieldValue;
+            }
         }
 
         //TODO XML method;

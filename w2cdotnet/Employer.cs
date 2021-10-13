@@ -11,13 +11,13 @@ namespace w2cdotnet
         private int _agentIndicatorCode;
         private int _agentEIN;
 
-        private EinField _employerEinField =
-            new EinField("employerEin", recordStart: 4, recordLength: 9, requiredField: true);
+        private EinFields _employerEinFields =
+            new EinFields("employerEin", recordStart: 4, recordLength: 9, requiredField: true);
         
 
         public Employer(int employerein)
         {
-            _employerEinField.SetFieldValue(employerein);
+            _employerEinFields.SetFieldValue(employerein);
 
         }
 

@@ -12,10 +12,11 @@ namespace w2cdotnet_test
         [TestMethod]
         public void Valid()
         {
-            var testvalidein = new Submitter(123456789, "abdc", softwareVendor: "ABCD");
+            var testvalidein = new Submitter(123456789, "abd", softwareVendor: "ABC");
             testvalidein.WriteLine();
-            
-        }
+            var testnull = new Submitter(123456789,softwareVendor:"ABCD");
+            testnull.WriteLine();
+        }   
 
         [TestMethod]
         [ExpectedException(typeof(Exceptions.InvalidEin))]
