@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<W2C>
+<Employer>
+    <ein>1234567</ein>
+    <name>Test Name</name>
+    <employee>
+        <ssn>444567890</ssn>
+        <name>John Doe</name>
+        <gross>100000</gross>
+    </employee>
+    <employee>
+        <ssn>123459876</ssn>
+        <name>Jane Doe</name>
+        <gross>50000</gross>
+    </employee>
+</Employer>
+<Employer>
+    <ein>12345789</ein>
+    <name>Test Name Two</name>
+</Employer>
+</W2C>

@@ -7,8 +7,8 @@ namespace w2cdotnet
        //Base field exceptions
         public class InvalidRecordLenEqException : Exception
             {
-                public InvalidRecordLenEqException(int recordLen)
-                    : base($"Expected Length of Field = {recordLen} Field Size")
+                public InvalidRecordLenEqException(int recordLen, string fieldName)
+                    : base($"Expected Length of {fieldName} = {recordLen} Field Size")
                 {
                     
                 }
@@ -16,8 +16,8 @@ namespace w2cdotnet
 
         public class InvalidRecordLenException : Exception
         {
-            public InvalidRecordLenException(int recordLen)
-                : base($"Expected Length of Field >= {recordLen}")
+            public InvalidRecordLenException(int recordLen, string fieldName)
+                : base($"Expected Length of {fieldName} >= {recordLen}")
             {
                     
             }

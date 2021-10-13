@@ -1,38 +1,45 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Text.Json;
 using System.Threading;
+using System.Xml;
 
 namespace w2cdotnet
 {
     public abstract class W2C
     {
-        public const int RecordLength = 1024;
+        public const int LineLength = 1024;
         public const int MaxEmployeeRecords = 25000;
         public const int MaxEmployerRecords = 500000;
 
         protected interface IField
         {
-            string Name { get; }
-            int RecordStart { get; }
-            int RecordLength { get;}
+            string FieldName { get; }
+            int FieldStart { get; }
+            int FieldLength { get;}
             bool RequiredField { get;}
             string FieldFormatted { get; }
+
+            void SetFieldValue<T>(T fieldValue);
+            T GetFieldValue<T>();
             
-
-
-
-
         }
-        protected class Field<T>:IField
+
+        protected abstract class Field<T>:IField
         {
-            public string Name { get; protected init; }
-            public int RecordStart { get; protected init; }
-            public int RecordLength { get; protected init; }
+            public string FieldName { get; protected init; }
+            public int FieldStart { get; protected init; }
+            public int FieldLength { get; protected init; }
             public bool RequiredField { get; protected init; }
-            protected T? _fieldValue = default;
-            private string _fieldFormat = String.Empty;
+            protected T? _fieldValue;
+            protected string _fieldFormat = String.Empty;
+            public abstract void SetFieldValue<T>(T fieldValue);
+            public abstract T GetFieldValue<T>();
+
+            
 
             public virtual string FieldFormatted
             {
@@ -40,7 +47,7 @@ namespace w2cdotnet
                 {
                     if (_fieldFormat == string.Empty && RequiredField)
                     {
-                        throw new Exceptions.RequiredFieldException(Name);
+                        throw new Exceptions.RequiredFieldException(FieldName);
                     }
                     else
                     {
@@ -50,55 +57,25 @@ namespace w2cdotnet
                 protected set => _fieldFormat = value;
             }
 
-            public T? FieldValue
+           protected Field(string name, int recordStart, int recordLength, bool requiredField)
             {
-                get
-                {
-                    if (RequiredField && object.Equals(_fieldValue, default))
-                    {
-                        throw new Exceptions.RequiredFieldException(Name);
-                    }
-                    else
-                    {
-                        return _fieldValue;
-                    }
-                }
-                set
-                { 
-                    string strValue = value.ToString();
-                    if (strValue.Length <= RecordLength)
-                    {
-                        _fieldValue = value;
-                    }
-                    else
-                    {
-                        throw new Exceptions.InvalidRecordLenException(RecordLength);
-                    }
-
-                    FieldFormatted = strValue;
-                }
-            }
-
-            
-           
-            
-            public Field(string name, int recordStart, int recordLength, bool requiredField, T fieldValue)
-            {
-                Name = name;
-                RecordStart = recordStart;
-                RecordLength = recordLength;
+                FieldName = name;
+                FieldStart = recordStart;
+                FieldLength = recordLength;
                 RequiredField = requiredField;
-                FieldValue = fieldValue;
             }
-
-            protected Field(string name, int recordStart, int recordLength, int requiredField)
-            {
-              
-            }
+           
         }
 
-        protected class EinField:Field<int>
+        protected class EinField:Field<int?>
         {
+            private Field<int?> _fieldImplementation;
+
+            public EinField(string name, int recordStart, int recordLength, bool requiredField) : 
+                base(name, recordStart, recordLength, requiredField)
+            {
+            }
+
             private static bool EinValidator(int? ein)
             {
                 List<string> invalidPrefix = new List<string>() 
@@ -111,50 +88,121 @@ namespace w2cdotnet
                 return !invalidPrefix.Contains(strEin[..2]);
             }
             
+            public override void SetFieldValue<T>(T fieldValue)
+            {
+                if (EinValidator(fieldValue))
+                {
+                    _fieldValue = fieldValue;
+                    FieldFormatted = fieldValue.ToString();
+                }
+                else
+                {
+                    throw new Exceptions.InvalidEin(fieldValue);
+                }
+            }
 
-            private new int FieldValue
+            public int? GetFieldValue()
+            {
+                if (RequiredField && object.Equals(_fieldValue, default))
+                {
+                    throw new Exceptions.RequiredFieldException(FieldName);
+                }
+                else
+                {
+                    return _fieldValue;
+                }
+            }
+            
+        }
+
+        protected class StringField:Field<string?>
+        {
+            public StringField(string name, int recordStart, int recordLength, bool requiredField) : base(name, recordStart, recordLength, requiredField)
+            {
+  
+            }
+            
+            public void SetFieldValue(string? fieldValue)
+            {
+                if (fieldValue.Length<=FieldLength)
+                {
+                    _fieldValue = fieldValue;
+                    FieldFormatted = fieldValue;
+                }
+                else
+                {
+                    throw new Exceptions.InvalidRecordLenException(FieldLength, FieldName);
+                }
+            }
+
+            public string? GetFieldValue()
+            {
+                if (RequiredField && Equals(_fieldValue, default))
+                {
+                    throw new Exceptions.RequiredFieldException(FieldName);
+                }
+                else
+                {
+                    return _fieldValue;
+                }
+            }
+
+            public override string FieldFormatted
             {
                 get
                 {
-                    if (RequiredField && object.Equals(_fieldValue,default))
+                    if (GetFieldValue() == default && RequiredField)
                     {
-                        
-                        throw new Exceptions.RequiredFieldException(Name);
+                        throw new Exceptions.RequiredFieldException(FieldName);
+                    }
+                    else if(GetFieldValue() == default && !RequiredField)
+                    {
+                        return new string(' ', FieldLength);
                     }
                     else
                     {
-                        return _fieldValue;
+                        return _fieldFormat;
                     }
                 }
-                set
+                //TODO implement FieldFormatted setter
+                protected set
                 {
-                    if (EinValidator(value))
-                    {
-                        _fieldValue = value;
-                        FieldFormatted = value.ToString();
-                    }
-                    else
-                    {
-                        throw new Exceptions.InvalidEin(value);
-                    }
+                    _fieldFormat = string.Format("{0,-"+FieldLength.ToString()+"}",GetFieldValue());
                 }
             }
-
-            public EinField(string name, int recordStart, int recordLength, int fieldValue) : 
-                base(name,recordStart, recordLength, fieldValue)
-            {
-                Name = name;
-                RecordStart = recordStart;
-                RecordLength = recordLength;
-                FieldValue = fieldValue;
-                RequiredField = true;
-            }
+            
         }
 
+        protected class MoneyField:Field<decimal>
+        {
+            public MoneyField(string name, int recordStart, int recordLength, bool requiredField) : 
+                base(name, recordStart, recordLength, requiredField)
+            {
+            }
+            
+            
+        }
+
+        //TODO XML method;
+        public W2C(Submitter submitter, int taxyear, XmlDocument xmldocument)
+        {
+            throw new NotImplementedException("XML not implmented");
+        }
+
+        //TODO JSON method;
+        public W2C(Submitter submitter, int taxyear, JsonDocument jsondoc)
+        {
+            throw new NotImplementedException("JSON not implemented");
+        }
+
+        public W2C()
+        {
+            
+        }
+        
         public abstract void WriteLine();
         
+        
     }
-
-    
     
 }
